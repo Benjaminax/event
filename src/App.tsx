@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { CalendarDays, ChevronDown, Clock3, Heart, MapPin, Search, SlidersHorizontal, Sparkles, X, ArrowUpRight, LocateFixed, Navigation, Layers3 } from "lucide-react";
+import { CalendarDays, ChevronDown, Clock3, Heart, MapPin, Search, SlidersHorizontal, Sparkles, X, ArrowUpRight, LocateFixed, Navigation, Layers3, Menu } from "lucide-react";
 import { gsap } from "gsap";
 import type { EventItem } from "./types";
 import { EventCard as SharedEventCard } from "./components/EventCard";
@@ -24,6 +24,7 @@ function App() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [location, setLocation] = useState("Brooklyn, NY");
   const [priceFilter, setPriceFilter] = useState("Any price");
   const [sortBy, setSortBy] = useState("Soonest first");
@@ -47,6 +48,7 @@ function App() {
   const savedEvents = events.filter(e => saved.includes(e.id));
   const navigate = (nextPage: "discover" | "saved" | "about") => {
     setPage(nextPage);
+    setMobileMenuOpen(false);
     window.history.replaceState(null, "", `#${nextPage}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -65,12 +67,13 @@ function App() {
   useEffect(() => {
     const closeMenus = (event: MouseEvent) => {
       if (!(event.target as HTMLElement).closest("[data-menu-root]")) {
-        setLocationOpen(false); setProfileOpen(false); setFiltersOpen(false); setSortOpen(false);
+        setLocationOpen(false); setProfileOpen(false); setFiltersOpen(false); setSortOpen(false); setMobileMenuOpen(false);
       }
     };
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setLocationOpen(false); setProfileOpen(false); setFiltersOpen(false); setSortOpen(false);
+        setMobileMenuOpen(false);
       }
     };
     document.addEventListener("click", closeMenus);
@@ -148,16 +151,39 @@ function App() {
       <p className="mt-5 font-mono text-[10px] uppercase tracking-[.28em] text-[#a6b9ab]">Find your next good plan</p>
       <div className="absolute bottom-12 h-px w-32 overflow-hidden bg-white/10"><span className="splash-progress block h-full w-1/2 bg-coral" /></div>
     </div>}
-    <header className={`fixed left-0 right-0 top-0 z-30 h-[78px] px-[5.8vw] flex items-center gap-14 transition-all duration-500 ${scrolled ? "mx-[2vw] mt-3 rounded-full border border-white/20 bg-white/10 shadow-[0_8px_24px_rgba(23,32,30,.06)] backdrop-blur-sm" : "border-b border-[#dce0d9] bg-paper"}`}>
+    <header className={`fixed left-0 right-0 top-0 z-30 flex h-[78px] items-center gap-14 px-[5.8vw] transition-all duration-500 ${scrolled ? "mx-[2vw] mt-3 rounded-full border border-white/20 bg-white/10 shadow-[0_8px_24px_rgba(23,32,30,.06)] backdrop-blur-sm" : "border-b border-[#dce0d9] bg-paper"}`}>
       <button onClick={() => navigate("discover")} className="text-[22px] font-extrabold tracking-[-1.3px]"><Sparkles className="inline-block text-coral mr-1" size={18} fill="currentColor" /> near<span className="text-coral">.</span></button>
       <nav className="hidden md:flex h-full items-center gap-8 text-[13px] font-semibold text-[#78817c]">
         <button onClick={() => navigate("discover")} className={page === "discover" ? "relative text-ink after:absolute after:-bottom-[30px] after:left-0 after:right-0 after:h-0.5 after:bg-coral" : ""}>Discover</button>
         <button onClick={() => navigate("saved")} className={page === "saved" ? "relative text-ink after:absolute after:-bottom-[30px] after:left-0 after:right-0 after:h-0.5 after:bg-coral" : ""}>Saved <span className="rounded-full bg-sage px-1.5 py-0.5 text-[10px]">{saved.length}</span></button>
         <button onClick={() => navigate("about")} className={page === "about" ? "relative text-ink after:absolute after:-bottom-[30px] after:left-0 after:right-0 after:h-0.5 after:bg-coral" : ""}>How it works</button>
       </nav>
-      <div className="ml-auto flex items-center gap-4">
+      <div className="ml-auto hidden items-center gap-4 md:flex">
         <div className="relative" data-menu-root><button onClick={() => { setLocationOpen(!locationOpen); setProfileOpen(false); setFiltersOpen(false); setSortOpen(false); }} className="text-xs font-bold"><MapPin className="inline text-coral mr-1" size={17} /> {location} <ChevronDown className={`inline text-[#68726d] transition ${locationOpen ? "rotate-180" : ""}`} size={14} /></button>{locationOpen && <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl border border-white/60 bg-paper/95 p-2 shadow-2xl backdrop-blur-xl"><p className="px-3 py-2 font-mono text-[9px] uppercase tracking-wider text-[#89928d]">Choose your city</p>{["Brooklyn, NY", "Manhattan, NY", "Queens, NY"].map(city => <button key={city} onClick={() => { setLocation(city); setLocationOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-xs font-semibold hover:bg-cream">{city}{location === city && <span className="text-coral">✓</span>}</button>)}</div>}</div>
         <div className="relative" data-menu-root><button onClick={() => { setProfileOpen(!profileOpen); setLocationOpen(false); setFiltersOpen(false); setSortOpen(false); }} className="h-9 w-9 rounded-full bg-dark text-[10px] font-extrabold text-white" aria-label="Open profile">JD</button>{profileOpen && <div className="absolute right-0 top-12 z-50 w-52 rounded-2xl border border-white/60 bg-paper/95 p-2 shadow-2xl backdrop-blur-xl"><div className="border-b border-[#dce0d9] px-3 py-3"><p className="text-xs font-bold">Jordan Davis</p><p className="mt-1 text-[10px] text-[#89928d]">jordan@example.com</p></div><button className="w-full rounded-xl px-3 py-2.5 text-left text-xs hover:bg-cream">Your preferences</button><button className="w-full rounded-xl px-3 py-2.5 text-left text-xs hover:bg-cream">Notification settings</button><button className="w-full rounded-xl px-3 py-2.5 text-left text-xs text-coral hover:bg-[#fbe0d8]">Sign out</button></div>}</div>
+      </div>
+      <div className="relative ml-auto md:hidden" data-menu-root>
+        <button
+          onClick={event => { event.stopPropagation(); setMobileMenuOpen(open => !open); }}
+          className="grid h-10 w-10 place-items-center rounded-full border border-[#dce0d9] bg-paper/70 text-ink"
+          aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-navigation"
+        >
+          {mobileMenuOpen ? <X size={19} /> : <Menu size={19} />}
+        </button>
+        {mobileMenuOpen && <div id="mobile-navigation" className="absolute right-0 top-14 w-[min(19rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/60 bg-paper/95 p-2 shadow-2xl backdrop-blur-xl">
+          <nav className="grid gap-1 border-b border-[#dce0d9] pb-2 text-sm font-semibold">
+            <button onClick={() => navigate("discover")} className={`flex items-center justify-between rounded-xl px-3 py-3 text-left ${page === "discover" ? "bg-cream text-ink" : "text-[#78817c]"}`}>Discover <ArrowUpRight size={15} /></button>
+            <button onClick={() => navigate("saved")} className={`flex items-center justify-between rounded-xl px-3 py-3 text-left ${page === "saved" ? "bg-cream text-ink" : "text-[#78817c]"}`}>Saved <span className="rounded-full bg-sage px-2 py-0.5 text-[10px]">{saved.length}</span></button>
+            <button onClick={() => navigate("about")} className={`flex items-center justify-between rounded-xl px-3 py-3 text-left ${page === "about" ? "bg-cream text-ink" : "text-[#78817c]"}`}>How it works <ArrowUpRight size={15} /></button>
+          </nav>
+          <div className="grid gap-1 pt-2">
+            <p className="px-3 py-2 font-mono text-[9px] uppercase tracking-wider text-[#89928d]">Your settings</p>
+            {["Brooklyn, NY", "Manhattan, NY", "Queens, NY"].map(city => <button key={city} onClick={() => { setLocation(city); setMobileMenuOpen(false); }} className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-xs font-semibold hover:bg-cream">{city}{location === city && <span className="text-coral">✓</span>}</button>)}
+            <div className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-semibold"><span>Jordan Davis</span><span className="grid h-6 w-6 place-items-center rounded-full bg-dark text-[8px] text-white">JD</span></div>
+          </div>
+        </div>}
       </div>
     </header>
     <main className="pt-[78px]">
